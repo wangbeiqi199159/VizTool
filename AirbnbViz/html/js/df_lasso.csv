@@ -1,0 +1,59 @@
+host_response_rate,-0.0
+host_acceptance_rate,-0.0
+host_is_superhost,1.6363765297636608
+accommodates,19.18762943240297
+bathrooms,12.447089182298646
+bedrooms,22.679795341528255
+beds,0.3144539068001079
+minimum_nights,0.0
+maximum_nights,-0.0
+number_of_reviews,-0.0
+review_scores_rating,0.6343294892838955
+review_scores_value,-0.0
+require_guest_profile_picture,0.0
+instant_bookable,-0.0
+require_guest_phone_verification,0.0
+reviews_per_month,-1.511353369754765
+host_response_time_a few days or more,0.0
+host_response_time_within a day,0.0
+host_response_time_within a few hours,0.0
+host_response_time_within an hour,-0.5086080732512579
+neighbourhood_group_cleansed_Ballard,0.0
+neighbourhood_group_cleansed_Beacon Hill,-0.0
+neighbourhood_group_cleansed_Capitol Hill,0.03944199579590774
+neighbourhood_group_cleansed_Cascade,0.0
+neighbourhood_group_cleansed_Central Area,-0.0
+neighbourhood_group_cleansed_Delridge,-0.0
+neighbourhood_group_cleansed_Downtown,7.9254844857965985
+neighbourhood_group_cleansed_Interbay,0.0
+neighbourhood_group_cleansed_Lake City,-0.0
+neighbourhood_group_cleansed_Magnolia,0.0
+neighbourhood_group_cleansed_Northgate,-0.0
+neighbourhood_group_cleansed_Other neighborhoods,-0.0
+neighbourhood_group_cleansed_Queen Anne,3.4135416614444263
+neighbourhood_group_cleansed_Rainier Valley,-0.8573959507438207
+neighbourhood_group_cleansed_Seward Park,-0.0
+neighbourhood_group_cleansed_University District,-0.0
+neighbourhood_group_cleansed_West Seattle,-0.0
+property_type_Apartment,0.0
+property_type_Bed & Breakfast,-0.0
+property_type_Boat,6.293200264178422
+property_type_Bungalow,0.0
+property_type_Cabin,0.0
+property_type_Camper/RV,-0.0
+property_type_Chalet,0.0
+property_type_Condominium,0.0
+property_type_Dorm,-1.0049572246681924
+property_type_House,-0.0
+property_type_Loft,0.0
+property_type_Other,-0.0
+property_type_Tent,-0.0
+property_type_Townhouse,-0.0
+property_type_Treehouse,0.0
+property_type_Yurt,0.0
+room_type_Entire home/apt,16.6780491497584
+room_type_Private room,-0.0
+room_type_Shared room,-1.0779205437657309
+cancellation_policy_flexible,-0.0
+cancellation_policy_moderate,-0.0
+cancellation_policy_strict,0.0

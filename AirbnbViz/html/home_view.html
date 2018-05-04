@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.js'></script>
+    <script src="js/listings.js"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:20; padding:10; }
+        #map { position:absolute; top:50px; bottom:10px; width:50%; }
+        #sidebar {position:absolute; top:50px; right:100px; }
+        #information {position:absolute; top:130px; right:100px; width:500px;}
+    
+    </style>
+</head>
+
+<body>
+
+    <h2 style="top:-20px;"> 
+        Seattle Airbnb Visualization of Homes
+    </h2>
+
+    <!--map-->
+
+    <div id='map'></div>
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoid2FuZ2JlaXFpMTk5MTU5IiwiYSI6ImNqMm1kcTNjczAwdWUyd253Z3IxcW5xMHYifQ.iws1nZ75QX-5DETQPedmnQ';
+        var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/dark-v9',
+                center: [-122.325769,47.620057],
+                zoom: 10.1
+        });
+
+        var mapId = "wangbeiqi199159.cj2qzjlcd001p2wmxq7lm6ocm-0cldu"
+
+        map.on('load', function () {
+
+
+                map.addLayer({
+                    'id': 'entire_fills',
+                    'type': 'circle',
+                    'source': {
+                        type: "geojson",
+                        data: listings
+                    },
+                    'paint': {
+                        'circle-radius': {
+                            'base': 1.75,
+                            'stops': [[12, 2.3], [20, 200]]
+                        },
+                        
+                        'circle-color': "#fbb03b",
+                        "circle-opacity": 0.85,
+                    },
+                    "filter": ["==", "room_type", "Entire home/apt"]
+                });
+
+                map.addLayer({
+                    'id': 'private_fills',
+                    'type': 'circle',
+                    'source': {
+                        type: "geojson",
+                        data: listings
+                    },
+                    'paint': {
+                        'circle-radius': {
+                            'base': 1.75,
+                            'stops': [[12, 2.3], [20, 200]]
+                        },
+                        
+                        'circle-color': "#3bb2d0",
+                        "circle-opacity": 0.85,
+                    },
+                    "filter": ["==", "room_type", "Private room"]
+                });
+
+                map.addLayer({
+                    'id': 'shared_fills',
+                    'type': 'circle',
+                    'source': {
+                        type: "geojson",
+                        data: listings
+                    },
+                    'paint': {
+                        'circle-radius': {
+                            'base': 1.75,
+                            'stops': [[12, 2.3], [20, 200]]
+                        },
+                        // color circles by ethnicity, using data-driven styles
+                        'circle-color': "#e55e5e",
+                        "circle-opacity": 0.85,
+                    },
+                    "filter": ["==", "room_type", "Shared room"]
+                });
+
+
+                var popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                });
+
+                var fills_list = ["entire_fills", "private_fills", "shared_fills"];
+
+                for(i = 0; i < 3; i++){
+                    var fills_name = fills_list[i];
+                    map.on("mousemove", fills_name, function(e) {
+                            popup.setLngLat(e.lngLat)
+                                .setHTML("Price:" + e.features[0].properties.price)
+                                .addTo(map);
+                    });
+
+                     map.on('click', fills_name, function (e) {
+                            popup.setLngLat(e.lngLat)
+                                .setHTML(e.features[0].properties.name)
+                                .addTo(map);
+
+                            document.getElementById('home_name').innerHTML = "<strong>Home Name: </strong>" + e.features[0].properties.name;
+                            document.getElementById('home_address').innerHTML = "<strong>Home Address: </strong>" + e.features[0].properties.street;
+                            document.getElementById('home_neighbourhood').innerHTML = "<strong>Neighbourhood: </strong>" + e.features[0].properties.neighbourhood;
+                            document.getElementById('home_roomtype').innerHTML = "<strong>Room Type: </strong>" + e.features[0].properties.room_type;
+                            document.getElementById('home_price').innerHTML = "<strong>Daily Price: </strong> $" + e.features[0].properties.price;
+                            document.getElementById('home_pic').innerHTML = "<img src=" + e.features[0].properties.picture_url + " style='width:304px;height:228px;'>";
+
+                    });
+
+                    map.on('mouseenter', fills_name, function(e) {
+                    // Change the cursor style as a UI indicator.
+                            map.getCanvas().style.cursor = 'pointer';
+
+                    });
+
+                    map.on('mouseleave', fills_name, function() {
+                        map.getCanvas().style.cursor = '';
+                        popup.remove();
+                    });
+
+                }
+
+                map.addControl(new mapboxgl.NavigationControl());
+        });
+
+    </script>
+
+    <!--buttons-->
+    <div id = "sidebar">
+        <button id = "entire" onclick = "click1()" style = "width:150px;height:40px;font: 14px sans-serif;background-color: #fbb03b">Entire home/apt</button>
+        <button id = "private" onclick = "click2()" style = "width:150px;height:40px;font: 14px sans-serif;background-color: #3bb2d0">Private room</button>
+        <button id = "shared" onclick = "click3()" style = "width:150px;height:40px;font: 14px sans-serif;background-color: #e55e5e">Shared room</button>
+    </div>
+
+    <script>
+        document.getElementById('entire').active = true;
+        document.getElementById('private').active = true;
+        document.getElementById('shared').active = true;
+
+        function click1(){
+            document.getElementById('entire').active = document.getElementById('entire').active ? false : true;
+            
+            if(document.getElementById('entire').active){
+                map.setLayoutProperty("entire_fills", 'visibility', 'visible');
+                document.getElementById('entire').style["background-color"] = "#fbb03b";
+
+            } else{
+                map.setLayoutProperty("entire_fills", 'visibility', 'none');
+                document.getElementById('entire').style["background-color"] = "#a7a8aa";
+            }
+            
+        };
+
+        function click2(){
+            document.getElementById('private').active = document.getElementById('private').active ? false : true;
+
+            if(document.getElementById('private').active){
+                map.setLayoutProperty("private_fills", 'visibility', 'visible');
+                 document.getElementById('private').style["background-color"] = "#3bb2d0";
+            } else{
+                map.setLayoutProperty("private_fills", 'visibility', 'none');
+                document.getElementById('private').style["background-color"] = "#a7a8aa";
+            }
+        };
+
+        function click3(){
+             document.getElementById('shared').active = document.getElementById('shared').active ? false : true;
+
+             if(document.getElementById('shared').active){
+                map.setLayoutProperty("shared_fills", 'visibility', 'visible');
+                document.getElementById('shared').style["background-color"] = "#e55e5e";
+            } else{
+                map.setLayoutProperty("shared_fills", 'visibility', 'none');
+                document.getElementById('shared').style["background-color"] = "#a7a8aa";
+            }
+        };
+    </script>
+
+
+    <!--information box-->
+    <div id = "information">
+        <fieldset>
+            <legend><strong>Detailed Information of Home</strong></legend>
+            <div id = "home_name"></div>
+            <div id = "home_address"></div>
+            <div id = "home_neighbourhood"></div>
+            <div id = "home_roomtype"></div>
+            <div id = "home_price"></div>
+            <div id = "home_pic"></div>
+        </fieldset>
+    </div>
+ 
+
+    
+
+
+
+
+
+
+
+
+
+</body>
+</html>

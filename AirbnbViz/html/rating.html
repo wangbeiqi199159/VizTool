@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.js'></script>
+    <script src="js/neighbourhoods.js"></script>
+    <script src="js/ranked_rating_data_by_group.js"></script>
+    <script src="js/ranked_rating.js"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:20; padding:10; }
+        #map { position:absolute; top:50px; bottom:10px; width:45%; }
+        #information_box {
+        	position:absolute;
+        	right: 330px;
+            margin-top:-15px;
+            padding: 1em;
+            overflow: hidden;
+    	}
+    	#bar1 {position: absolute;top:190px;right:330px;}
+        #bar2 {position: absolute;top:190px;right:520px;}
+        #ranking_list1 {position: absolute;top:60px;right: 50px;padding: 10px;
+            background-color: #BCDA8F}
+        #ranking_list2 {position: absolute;top:320px;right:50px;padding: 10px;
+            background-color: #ffa3a3}
+
+    	.chart div {
+  	     font: 14px sans-serif;
+  	     background-color: steelblue;
+  	     text-align: right;
+ 	      padding: 3px;
+  	     margin: 1px;
+  	     color: white;
+	       }
+	    .mapboxgl-popup {
+        max-width: 400px;
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        }
+
+        .legend {
+        background-color: #fff;
+        border-radius: 3px;
+        bottom: 30px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        padding: 10px;
+        position: absolute;
+        left: 450px;
+        z-index: 1;
+        }
+
+        .legend h4 {
+        margin: 0 0 10px;
+        }
+
+        .legend div span {
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin-right: 5px;
+        width: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 style="top:-20px;"> 
+        Seattle Airbnb Visualization by Neighbourhoods: Average Rating
+    </h2>
+
+    <!--map-->
+
+    <div id='map'></div>
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoid2FuZ2JlaXFpMTk5MTU5IiwiYSI6ImNqMm1kcTNjczAwdWUyd253Z3IxcW5xMHYifQ.iws1nZ75QX-5DETQPedmnQ';
+        var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/light-v9',
+                center: [-122.325769,47.620057],
+                zoom: 10.1
+        });
+
+        var mapId = "wangbeiqi199159.cj2qzjlcd001p2wmxq7lm6ocm-0cldu"
+        var avg_data = neighbourhoods
+        var stops = [["0","rgba(0,0,0,0)"]]
+
+        map.on('load', function () {
+                map.addSource("neighbourhoods", {
+                    type : "geojson",
+                    data : neighbourhoods
+        });
+
+        /*  neighbourhood layer color by rating*/
+        var color_list = ["#036502","#1E7410","#338320","#47922F","#5DA13F","#73B051","#8ABE64","#A3CD79","#BCDA8F","#D7E8A7","#F4F5C0"];
+        var stop = [0,90,91,92,93,94,95,96,97,98,100];
+        var legend_lable = ["above 98", "98", "97", "96", "95", "94", "93", "92", "91", "90", "below 90"];
+        var origin_color_list = color_list.slice();
+        color_list.reverse();
+
+        var stops = [];
+
+        for(i = 0; i < stop.length; i++){
+            stops.push([stop[i], color_list[i]]);
+
+            var div = document.createElement('div');
+            div.innerHTML = "<span style='background-color: " + origin_color_list[i] + "'></span>" +legend_lable[i];
+            document.getElementById("map_legend").appendChild(div);
+        }
+
+        var div = document.createElement('div');
+        div.innerHTML = "<span style='background-color: black'></span>No data";
+        document.getElementById("map_legend").appendChild(div);
+
+
+        map.addLayer({
+                'id': 'neighbour_fills',
+                'type': 'fill',
+                'source': "neighbourhoods",
+                "layout": {},
+                'paint': {
+                    'fill-color': {
+                        "property": "rating",
+                        "stops": stops
+                    },
+                    "fill-outline-color": "white",
+                    'fill-opacity': 0.75
+                }
+        });
+
+        /*  neighbourhood hover layer */
+        map.addLayer({
+                "id": "neighbour_fills_hover",
+                "type": "fill",
+                "source": "neighbourhoods",
+                "layout": {},
+                "paint": {
+                    "fill-color": "orange",
+                    "fill-opacity": 0.6
+                },
+                "filter": ["==", "neighbourhood", ""]
+        });
+
+        /*  neighbourhood group hover layer */
+        map.addLayer({
+                "id": "group_fills_hover",
+                "type": "fill",
+                "source": "neighbourhoods",
+                "layout": {},
+                "paint": {
+                    "fill-color": "orange",
+                    "fill-opacity": 0.3
+                },
+                "filter": ["==", "neighbourhood_group", ""]
+        });
+
+
+        var popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false
+        });
+
+        map.on('mouseenter', 'neighbour_fills', function(e) {
+        // Change the cursor style as a UI indicator.
+                map.getCanvas().style.cursor = 'pointer';
+                map.setLayoutProperty("neighbour_fills_hover", 'visibility', 'visible')
+                map.setLayoutProperty("group_fills_hover", 'visibility', 'visible')
+
+        });
+
+        map.on("mousemove", "neighbour_fills", function(e) {
+                map.setFilter("neighbour_fills_hover", 
+                    ["==", "neighbourhood", e.features[0].properties.neighbourhood]);
+                map.setFilter("group_fills_hover", 
+                    ["==", "neighbourhood_group", e.features[0].properties.neighbourhood_group]);
+                popup.setLngLat(e.lngLat)
+                    .setHTML(e.features[0].properties.neighbourhood)
+                    .addTo(map);
+        
+        });
+
+        map.on('click', 'neighbour_fills', function (e) {
+
+                document.getElementById('information_name').innerHTML = "Neighbourhood Name:" 
+                                                    + "<strong>" + e.features[0].properties.neighbourhood + "</strong>";
+                document.getElementById('information_group').innerHTML = "Neighbourhood Group:" 
+                                                + "<strong>" + e.features[0].properties.neighbourhood_group + "</strong>";
+                                     
+                var rating = e.features[0].properties.rating;
+                document.getElementById('information_value').innerHTML = "Average Rating:" + "<strong>"+ rating + "<strong>";
+                                     
+                var target = document.getElementById(e.features[0].properties.neighbourhood_group);
+                target.style["background-color"] = "orange";
+        
+                map.on('mouseleave', 'group_fills_hover', function() {
+                    target.style["background-color"] = "";
+
+                });  
+
+        });
+
+
+        map.on('mouseleave', 'neighbour_fills', function() {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+                map.setLayoutProperty("neighbour_fills_hover", 'visibility', 'none')
+                map.setLayoutProperty("group_fills_hover", 'visibility', 'none')
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        });
+
+    </script>
+
+    <!--map legend-->
+    <div id='map_legend' class='legend'>
+        <h4>Average Rating</h4>
+    </div>
+
+    <!--neighbourhood information box-->
+    <form id = "information_box">
+        <fieldset>
+            <legend>
+                <strong>Detailed Information of Neighbourhood:</strong>
+            </legend>
+           <div id='information_name'>Neighbourbood Name:</div>
+           <div id='information_group'>Neighbourhood Group:</div>
+           <div id='information_value'>Average Rating:</div>
+        </fieldset>
+    </form>
+
+    <!--bar chart-->
+    <h4 style = "position:absolute;top:150px;right:330px;">
+            Average Rating by Neighbourhood Group
+    </h4>
+    <div id = "bar1" class="chart"></div>
+    <div id = "bar2" class="chart"></div>
+    
+    <script type="text/javascript">
+
+        var bar_data = ranked_rating_data_by_group;
+        var rank = 0;
+
+        bar_data.forEach(function(row){
+                // generate bar
+            if(row["ranked_rating_index"] != "Other neighborhoods"){
+                var div1 = document.createElement('div');
+                div1.id = row["ranked_rating_index"]
+                div1.innerHTML = row["ranked_rating"].toFixed(1)
+                div1.style.width = (row["ranked_rating"] - 80) * 9 + "px"
+                document.getElementById("bar1").appendChild(div1)
+
+                // generate rank and bar axis name
+                rank = rank + 1
+                var div2 = document.createElement('div');
+                div2.innerHTML = "#" + rank + ": " + row["ranked_rating_index"]
+                div2.style["background-color"] = "white"
+                div2.style["color"] = "black"
+                document.getElementById("bar2").appendChild(div2)
+            }
+
+        });
+
+    </script>
+
+    <!--ranking list-->
+    <div>
+        <fieldset id = ranking_list1>
+            <legend><strong>Top 5 <em>Best</em> Rating Neighbourhood</strong></legend>
+            <p id= "b1" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">1</p>
+            <p id= "b2" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">2</p>
+            <p id= "b3" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">3</p>
+            <p id= "b4" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">4</p>
+            <p id= "b5" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">5</p>
+        </fieldset>
+    </div>
+
+     <div>
+        <fieldset id = ranking_list2>
+            <legend><strong>Top 5 <em>Worst</em> Rating Neighbourhood</strong></legend>
+            <p id= "w1" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">1</p>
+            <p id= "w2" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">2</p>
+            <p id= "w3" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">3</p>
+            <p id= "w4" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">4</p>
+            <p id= "w5" onmousemove = "on_text(this)" onmouseout = "leave_text(this)">5</p>
+        </fieldset>
+    </div>
+
+    <script type="text/javascript">
+        for(i = 1; i < 6; i++){
+
+            var p = document.getElementById("b" + i.toString())
+            p.id = ranked_rating_index[i-1];
+            var top_rank = i;
+            p.innerHTML = "#" + top_rank + "\n\n" + ranked_rating_index[i-1] + ": " + ranked_rating_value[i-1].toFixed(2);
+            
+        }
+
+        var len = ranked_rating_index.length
+        for(i = 1; i < 6; i++){
+
+            var p = document.getElementById("w" + i.toString())
+            p.id = ranked_rating_index[len - i];
+            var top_rank = i;
+            p.innerHTML = "#" + top_rank + "\n\n" + ranked_rating_index[len - i] + ": " + ranked_rating_value[len - i].toFixed(2);
+        }
+    
+
+        function on_text(x){
+            x.style.textDecoration='underline';
+            map.setLayoutProperty("neighbour_fills_hover", 'visibility', 'visible')
+            map.setFilter("neighbour_fills_hover", 
+                    ["==", "neighbourhood", x.id]);
+            document.getElementById('information_name').innerHTML = x.innerHTML;
+            document.getElementById('information_group').innerHTML = "";
+            document.getElementById('information_value').innerHTML = "";
+        }
+
+        function leave_text(x){
+            x.style.textDecoration='none';
+            map.setLayoutProperty("neighbour_fills_hover", 'visibility', 'none')
+        }
+        
+
+
+
+    </script>
+
+</body>
+</html>

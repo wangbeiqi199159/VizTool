@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+ 	<meta charset='utf-8' />
+    <title></title>
+  <script src="js/predict_source.js"></script>
+  <style>
+				  	html{
+				   background-size: cover;
+				   height:100%;
+				   background-color: #000;
+				}
+				* {
+				   box-sizing:border-box;
+				   -webkit-box-sizing:border-box;
+				   -moz-box-sizing:border-box;
+				   -webkit-font-smoothing:antialiased;
+				   -moz-font-smoothing:antialiased;
+				   -o-font-smoothing:antialiased;
+				   font-smoothing:antialiased;
+				   text-rendering:optimizeLegibility;
+				}
+				body {
+				   color: #C0C0C0;
+				   font-family: Arial, san-serif;
+				}
+
+
+				/* Contact Form Styles */
+				h1 {
+				   margin: 10px 0 0 0;
+				}
+				h4{
+				   margin: 0 0 20px 0;
+				}
+				#contact-form {
+				   background-color:rgba(72,72,72,0.7);
+				   padding: 10px 20px 30px 20px;
+				   width:100%;
+				   height:100%;
+				   float: left;
+				   
+				   position: absolute;
+				   
+				   -webkit-border-radius:7px;
+				   -moz-border-radius:7px;
+				}
+				#contact-form input,   
+				#contact-form select,   
+				#contact-form textarea,   
+				#contact-form label { 
+				   font-size: 15px;  
+				   margin-bottom: 2px;
+				   font-family: Arial, san-serif;
+				} 
+				#contact-form input,   
+				#contact-form select,   
+				#contact-form textarea { 
+				   width:300px;
+				   background: #fff;
+				   border: 0; 
+				   -moz-border-radius: 4px;  
+				   -webkit-border-radius: 4px;  
+				   border-radius: 4px;
+				   margin-bottom: 25px;  
+				   padding: 5px;  
+				}  
+				#contact-form input:focus,   
+				#contact-form select:focus,   
+				#contact-form textarea:focus {  
+				   background-color: #E5E6E7; 
+				}  
+				#contact-form textarea {
+				   width:300px;
+				   height: 150px;
+				}
+				
+				
+				#contact-form .required {  
+				   font-weight:bold;  
+				   color: #E5E6E7;      
+				}
+
+			
+				/* Make form look nice on smaller screens */
+				@media only screen and (max-width: 580px) {
+				   #contact-form{
+				      left: 3%;
+				      margin-right: 3%;
+				      width: 88%;
+				      margin-left: 0;
+				      padding-left: 3%;
+				      padding-right: 3%;
+				   }
+				}
+				#result_form {
+					position:absolute;
+					right:400px;
+					top:100px;
+				}
+	</style>
+</head>
+
+<body>
+
+<div id="contact-form">
+	<div>
+		<h1>Rent Price Prediction</h1> 
+		<h3>Please input all paramaters, then click PREDICT.</h3>
+	</div>
+
+		   <form method="post" action="/">
+			<div>
+		      <label for="accommodates">
+		      	<span class="required">Accommodates</span> 
+		      	<input type="number" id="accommodates" value="" required="required" tabindex="1" autofocus="autofocus" />
+		      </label> 
+			</div>
+			<div>
+		      <label for="bed">
+		      	<span class="required">Number of Bedrooms</span>
+		      	<input type="number" id="bed" value="" tabindex="4" required="required" />
+		      </label>  
+			</div>
+			<div>
+		      <label for="bath">
+		      	<span class="required">Number of Bathrooms</span>
+		      	<input type="number" id="bath" value="" tabindex="4" required="required" />
+		      </label>  
+			</div>
+			<div>		          
+		      <label for="neighborhood">
+		      <span class="required">Neighborhood Group: </span>
+			      <select id="neighborhood" tabindex="4">  
+			      </select>
+		      </label>
+			</div>
+			<div>		          
+		      <label for="property">
+		      <span class="required">Property Type: </span>
+			      <select id="property" tabindex="4">  
+			      </select>
+		      </label>
+			</div>
+			<div>		          
+		      <label for="room">
+		      <span class="required">Room Type: </span>
+			      <select id="room" tabindex="4">  
+			      </select>
+		      </label>
+			</div>
+			
+			<div>		           
+		      <button type = "button" id="click" onclick = "myclick()" style = "width:200px;height:50px;">PREDICT PRICE!</button> 
+			</div>
+		   </form>
+
+	</div>
+
+</div>
+
+<div id = "result_form">
+	<h4>Your Suggested Price:</h4>
+	<p id = "result"></p>
+</div>
+
+<script type="text/javascript">
+	var n1 = group_list.length
+	for(i = 0; i < n1; i++){
+		var opt = document.createElement('option');
+        opt.value = group_value[i]
+        opt.innerHTML = group_list[i]
+        document.getElementById("neighborhood").appendChild(opt)
+	}
+
+	var n2 = property_list.length
+	for(i = 0; i < n2; i++){
+		var opt = document.createElement('option');
+        opt.value = property_value[i]
+        opt.innerHTML = property_list[i]
+        document.getElementById("property").appendChild(opt)
+	}
+
+	var n3 = room_list.length
+	for(i = 0; i < n3; i++){
+		var opt = document.createElement('option');
+        opt.value = room_value[i]
+        opt.innerHTML = room_list[i]
+        document.getElementById("room").appendChild(opt)
+	}
+
+	function myclick(){
+		var accor = document.getElementById("accommodates").value;
+		var bed = document.getElementById("bed").value;
+		var bath = document.getElementById("bath").value;
+		var neighborhood = document.getElementById("neighborhood").value;
+		var property = document.getElementById("property").value;
+		var room = document.getElementById("room").value;
+		var result = 80 + accor * 19 + bed * 12 + bath * 23;
+		document.getElementById("result").innerHTML = "$" + result;
+	}
+
+	
+
+</script>
+  
+</body>
+</html>
